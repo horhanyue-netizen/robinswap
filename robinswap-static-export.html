@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Robinswap — Testnet Early Access</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  :root{
+    --light:#AAD56D; --dark:#056734;
+    --bg:#0B0C0E; --panel:#121417; --panel-alt:#16181B; --border:#262930; --border2:#34383F;
+    --text:#F2F3F5; --dim:#8B8F98; --faint:#54585F; --red:#FF4D6A; --cyan:#00E5FF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;}
+  .disp{font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif;}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit;}
+  input{font-family:inherit;}
+  .hidden{display:none !important;}
+  .flex{display:flex;}
+  .flex-col{display:flex;flex-direction:column;}
+  .items-center{align-items:center;}
+  .justify-between{justify-content:space-between;}
+  .justify-center{justify-content:center;}
+  .gap-1{gap:4px;} .gap-2{gap:8px;} .gap-3{gap:12px;} .gap-4{gap:16px;}
+  .wrap{flex-wrap:wrap;}
+  .grow{flex:1;min-width:0;}
+  .shrink-0{flex-shrink:0;}
+  .text-center{text-align:center;}
+  .text-right{text-align:right;}
+  .rounded{border-radius:6px;}
+  .rounded-full{border-radius:999px;}
+  .container{max-width:1100px;margin:0 auto;padding:0 16px;}
+  .panel{background:var(--panel);}
+  .panel-alt{background:var(--panel-alt);}
+  .bordered{border:1px solid var(--border);}
+  .dim{color:var(--dim);}
+  .faint{color:var(--faint);}
+  .green{color:var(--light);}
+  .cyan{color:var(--cyan);}
+  .red{color:var(--red);}
+  .track{letter-spacing:.08em;}
+  .track2{letter-spacing:.15em;}
+  .fw{font-weight:700;}
+  .fw6{font-weight:600;}
+  .scanlines{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:.5;
+    background-image:repeating-linear-gradient(to bottom, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);}
+  .btn-ghost{border:1px solid var(--border);transition:.2s;}
+  .btn-ghost:hover{border-color:var(--border2);background:#1A1D21;}
+  .btn-primary{background:var(--dark);color:var(--text);transition:.2s;}
+  .btn-primary:hover{box-shadow:0 0 30px rgba(170,213,109,.45),0 0 8px rgba(170,213,109,.6) inset;transform:translateY(-1px);}
+  .btn-primary:disabled{background:#20232A;color:var(--faint);box-shadow:none;transform:none;cursor:not-allowed;}
+  .btn-outline{border:1px solid var(--light);color:var(--light);background:rgba(170,213,109,.08);transition:.2s;}
+  .btn-outline:hover{background:rgba(170,213,109,.18);}
+  .btn-outline.active{background:rgba(170,213,109,.18);}
+  .btn-solid-dark{background:var(--dark);color:var(--text);transition:.2s;}
+  .btn-solid-dark:hover{box-shadow:0 0 22px rgba(170,213,109,.4);transform:translateY(-1px);}
+  .link-green{color:var(--light);transition:opacity .2s;}
+  .link-green:hover{opacity:.7;}
+  .icon-btn{color:var(--dim);border:1px solid transparent;transition:.2s;}
+  .icon-btn:hover{color:var(--text);border-color:var(--border);background:#1A1D21;}
+  .blink{animation:blink 1.1s step-start infinite;}
+  @keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
+  .glow{animation:glowp 2.2s ease-in-out infinite;}
+  @keyframes glowp{0%,100%{opacity:.55;}50%{opacity:1;}}
+  .fadeup{animation:fadeup .4s ease both;}
+  @keyframes fadeup{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulsering{0%{box-shadow:0 0 0 0 rgba(170,213,109,.45);}70%{box-shadow:0 0 0 9px rgba(170,213,109,0);}100%{box-shadow:0 0 0 0 rgba(170,213,109,0);}}
+  .pulsering{animation:pulsering 2s infinite;}
+
+  header.top{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--border);backdrop-filter:blur(10px);background:rgba(11,12,14,.9);}
+  .eco-strip{width:100%;display:flex;align-items:center;justify-content:center;gap:16px;padding:6px 12px;background:#0F1113;border-bottom:1px solid #1B1E22;overflow-x:auto;font-size:9px;}
+  .navrow{max-width:1100px;margin:0 auto;padding:0 16px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .desktop-nav{display:none;}
+  .navtabs{display:flex;align-items:center;gap:4px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:4px;}
+  .navtab{color:var(--dim);padding:6px 14px;border-radius:6px;font-weight:700;letter-spacing:.15em;font-size:11px;transition:.2s;}
+  .navtab:hover{color:var(--text);}
+  .navtab.active{background:var(--light);color:#0B0C0E;}
+  .menu-btn{display:inline-flex;}
+  @media(min-width:768px){
+    .desktop-nav{display:flex;}
+    .menu-btn{display:none;}
+    .mobile-brand{display:none;}
+    main{padding-bottom:0 !important;}
+    #bottomnav{display:none;}
+  }
+
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-text{display:flex;flex-direction:column;line-height:1;}
+  .wallet-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:6px;font-weight:700;letter-spacing:.05em;font-size:11px;}
+
+  section.tab{max-width:1100px;margin:0 auto;padding:32px 16px 24px;}
+  .hero{text-align:center;margin-bottom:24px;}
+  .hero h1{font-size:clamp(24px,6vw,40px);margin:14px 0 8px;}
+  .hero p{color:var(--dim);font-size:13px;max-width:520px;margin:0 auto;}
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:10px;color:var(--dim);}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--light);}
+
+  .eco-cta{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:0 auto 24px;}
+  .eco-cta a{border-radius:6px;padding:10px 12px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700;letter-spacing:.05em;font-size:11px;}
+
+  .swapcard{max-width:420px;margin:0 auto;border:1px solid var(--border);border-radius:10px;background:var(--panel);}
+  .swapcard-head{display:flex;align-items:center;justify-content:between;justify-content:space-between;padding:16px 16px 8px;}
+  .swap-box{margin:0 16px;background:var(--panel-alt);border:1px solid var(--border);border-radius:8px;padding:14px;}
+  .swap-label{font-size:10px;color:var(--faint);letter-spacing:.15em;}
+  .swap-amt-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;}
+  .swap-amt-row input{background:transparent;border:none;outline:none;color:var(--text);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(20px,6vw,26px);width:100%;min-width:0;}
+  .swap-amt-row input::placeholder{color:var(--faint);}
+  .token-btn{border:1px solid var(--border);background:#1A1D21;border-radius:999px;display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;flex-shrink:0;transition:.2s;}
+  .token-btn:hover{border-color:var(--light);}
+  .token-glyph{display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:700;flex-shrink:0;}
+  .swap-flip-wrap{display:flex;justify-content:center;margin:-14px 0;position:relative;z-index:2;}
+  .swap-flip{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--panel);display:flex;align-items:center;justify-content:center;transition:transform .35s ease;}
+  .usdrow{font-size:11px;color:var(--faint);margin-top:4px;}
+  .route-trace{margin:12px 16px 0;border:1px solid rgba(0,229,255,.35);border-radius:8px;padding:12px;}
+  .rt-hop{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:3px 0;}
+  .details-toggle{margin:12px 16px 0;border:1px solid var(--border);border-radius:8px;}
+  .details-toggle-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:11px;color:var(--dim);}
+  .details-body{padding:0 14px 12px;font-size:11px;}
+  .details-body .row{display:flex;justify-content:space-between;padding:3px 0;}
+  .cta-wrap{padding:16px;}
+  .cta-btn{width:100%;padding:14px;border-radius:8px;font-weight:700;letter-spacing:.05em;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .foot-note{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;color:var(--faint);font-size:10px;text-align:center;}
+
+  .modal-overlay{position:fixed;inset:0;z-index:60;background:rgba(5,6,7,.75);display:flex;align-items:center;justify-content:center;padding:16px;}
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:10px;width:100%;max-width:380px;max-height:82vh;display:flex;flex-direction:column;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);}
+  .modal-search{display:flex;align-items:center;gap:8px;background:var(--panel-alt);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin:16px 16px 0;}
+  .modal-search input{background:transparent;border:none;outline:none;color:var(--text);width:100%;font-size:13px;}
+  .modal-filters{display:flex;gap:8px;margin:12px 16px 0;}
+  .filter-chip{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.03em;}
+  .modal-list{overflow-y:auto;padding:8px;}
+  .modal-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:6px;cursor:pointer;transition:.15s;}
+  .modal-row:hover{background:#1A1D21;}
+
+  .grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;}
+  .stat-card{border:1px solid var(--border);border-radius:8px;padding:14px;background:var(--panel);}
+  .stat-label{font-size:9px;color:var(--faint);letter-spacing:.15em;margin-bottom:4px;}
+  .stat-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;}
+  .pair-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;}
+  .pair-pill{border:1px solid var(--border);color:var(--dim);border-radius:999px;padding:6px 12px;font-size:11px;font-weight:600;white-space:nowrap;transition:.2s;}
+  .pair-pill:hover{border-color:var(--border2);color:var(--text);}
+  .pair-pill.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.08);}
+  .tf-btn{color:var(--dim);border-radius:6px;padding:4px 10px;font-size:10px;font-weight:600;}
+  .tf-btn.active{background:var(--cyan);color:#0B0C0E;}
+  .chart-wrap{border:1px solid var(--border);border-radius:10px;padding:16px;background:var(--panel);margin-bottom:20px;}
+  .swaps-table{border:1px solid var(--border);border-radius:10px;padding:16px;background:var(--panel);}
+  .swaps-head-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;font-size:9px;color:var(--faint);letter-spacing:.15em;padding-bottom:8px;border-bottom:1px solid #1B1E22;}
+  .swaps-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;align-items:center;padding:8px 0;font-size:11px;border-bottom:1px solid #16181B;}
+  @media(min-width:640px){.swaps-head-row,.swaps-row{grid-template-columns:1fr 1fr 1.4fr 1fr 1fr;}}
+  .side-tag{border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;}
+
+  .roadmap-desktop{display:none;}
+  @media(min-width:768px){.roadmap-desktop{display:block;}.roadmap-mobile{display:none;}}
+  .rm-track{display:flex;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:24px;background:var(--panel);margin-bottom:20px;}
+  .rm-node{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer;transition:transform .25s;}
+  .rm-node:hover{transform:translateY(-2px);}
+  .rm-circle{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .rm-line{height:1px;flex:1;background:var(--border);margin:0 8px;position:relative;top:-22px;}
+  .rm-line-fill{position:absolute;inset:0;background:linear-gradient(to right,var(--light),var(--cyan));}
+  .rm-mobile-item{display:flex;gap:12px;}
+  .rm-mobile-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .rm-mobile-line{width:1px;flex:1;min-height:28px;background:var(--border);margin:4px auto;}
+  .rm-detail{border-radius:10px;padding:20px;background:var(--panel);}
+  .locked-box{border:1px dashed var(--border2);border-radius:8px;padding:18px;background:#0F1113;}
+  .bar-line{height:7px;border-radius:999px;background:#1B1E22;margin-bottom:6px;}
+
+  .wp-frame{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--panel);}
+  .wp-titlebar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--panel-alt);}
+  .wp-grid{display:grid;grid-template-columns:1fr;}
+  @media(min-width:768px){.wp-grid{grid-template-columns:220px 1fr;}}
+  .wp-toc{padding:16px;border-bottom:1px solid var(--border);}
+  @media(min-width:768px){.wp-toc{border-bottom:none;border-right:1px solid var(--border);}}
+  .toc-link{display:block;text-align:left;padding:6px 0 6px 10px;border-left:2px solid transparent;color:var(--dim);font-size:11px;font-weight:600;width:100%;}
+  .toc-link.active{color:var(--light);border-left-color:var(--light);}
+  .wp-body{padding:22px;line-height:1.7;}
+  .wp-sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .wp-sec-icon{width:30px;height:30px;border-radius:6px;background:rgba(170,213,109,.12);border:1px solid rgba(170,213,109,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .wp-divider{border-top:1px dashed var(--border);margin:26px 0;}
+  .involve-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+  .involve-num{width:20px;height:20px;border-radius:50%;background:rgba(170,213,109,.1);border:1px solid rgba(170,213,109,.5);color:var(--light);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+  footer.site{border-top:1px solid var(--border);margin-top:60px;padding:32px 0;}
+  .foot-grid{display:grid;grid-template-columns:1fr;gap:28px;margin-bottom:28px;}
+  @media(min-width:768px){.foot-grid{grid-template-columns:1fr 1fr;}}
+  .eco-link{border:1px solid var(--border);background:var(--panel-alt);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;transition:.2s;}
+  .eco-link:hover{border-color:var(--light);transform:translateY(-1px);}
+  .foot-bottom{border-top:1px solid var(--border);padding-top:18px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:11px;color:var(--faint);}
+  @media(min-width:768px){.foot-bottom{flex-direction:row;justify-content:space-between;}}
+
+  #bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:30;border-top:1px solid var(--border);background:rgba(11,12,14,.95);backdrop-filter:blur(10px);}
+  .bn-grid{display:grid;grid-template-columns:repeat(4,1fr);}
+  .bn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:10px 0;color:var(--faint);font-size:9px;font-weight:700;letter-spacing:.05em;}
+  .bn-item.active{color:var(--light);}
+  main{padding-bottom:76px;}
+
+  .drawer-overlay{position:fixed;inset:0;z-index:70;background:rgba(5,6,7,.7);}
+  .drawer{position:absolute;right:0;top:0;bottom:0;width:280px;max-width:85vw;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);}
+  .drawer-body{padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:24px;}
+  .drawer-navbtn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:600;color:var(--dim);}
+  .drawer-navbtn.active{border:1px solid var(--light);color:var(--light);background:rgba(170,213,109,.08);}
+
+  #toast{position:fixed;right:16px;bottom:90px;z-index:80;}
+  .toast-box{background:var(--panel);border:1px solid var(--light);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 0 24px rgba(170,213,109,.25);font-size:12px;}
+
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--panel);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+<div style="background:radial-gradient(ellipse 70% 45% at 50% -8%, rgba(170,213,109,0.08), transparent), radial-gradient(ellipse 55% 35% at 92% 8%, rgba(0,229,255,0.06), transparent), #0B0C0E; min-height:100vh;">
+<div class="scanlines"></div>
+
+<header class="top">
+  <div class="eco-strip">
+    <span class="flex items-center gap-1 green fw6 track2"><span class="glow">&#128640;</span> TESTNET EARLY ACCESS</span>
+    <span class="faint">&middot;</span>
+    <a href="https://faucet.testnet.chain.robinhood.com/" target="_blank" class="link-green flex items-center gap-1 fw6">&#128167; CLAIM TESTNET ASSETS</a>
+    <span class="faint">&middot;</span>
+    <a href="https://explorer.testnet.chain.robinhood.com/" target="_blank" class="dim flex items-center gap-1 fw6">&#128506; VIEW EXPLORER</a>
+  </div>
+  <div class="navrow">
+    <div class="brand" id="brandDesktop">
+      <div style="position:relative;width:34px;height:34px;">
+        <svg viewBox="0 0 120 120" width="34" height="34">
+          <g stroke="#AAD56D" stroke-width="3.5" stroke-linecap="round">
+            <line x1="90" y1="16" x2="90" y2="38"/><line x1="99" y1="8" x2="99" y2="32"/><line x1="108" y1="18" x2="108" y2="40"/>
+          </g>
+          <rect x="86" y="22" width="8" height="11" rx="2" fill="#AAD56D"/>
+          <rect x="95" y="14" width="8" height="13" rx="2" fill="#AAD56D"/>
+          <rect x="104" y="24" width="8" height="11" rx="2" fill="#AAD56D"/>
+          <rect x="16" y="86" width="56" height="15" rx="7.5" fill="#056734" stroke="#AAD56D" stroke-width="2.5" transform="rotate(-16 16 86)"/>
+          <rect x="48" y="86" width="56" height="15" rx="7.5" fill="#056734" stroke="#AAD56D" stroke-width="2.5" transform="rotate(16 48 86)"/>
+          <path d="M60 6 C33 6 14 27 14 54 C14 75 27 92 46 98 L74 98 C93 92 106 75 106 54 C106 29 89 8 64 6 Z" fill="#056734" stroke="#AAD56D" stroke-width="3.5"/>
+          <path d="M77 8 L94 -1 L87 19 Z" fill="#056734" stroke="#AAD56D" stroke-width="2.5" stroke-linejoin="round"/>
+          <ellipse cx="60" cy="58" rx="27" ry="25" fill="#0B0C0E"/>
+          <path d="M45 64 L60 56 L75 64 Q60 76 45 64 Z" fill="#F2A94E"/>
+          <path d="M46 65 Q60 80 74 65 Q60 72 46 65 Z" fill="#D97B1B"/>
+        </svg>
+        <span class="dot blink" style="position:absolute;top:-2px;right:-2px;"></span>
+      </div>
+      <div class="brand-text">
+        <span class="disp fw" style="font-size:16px;"><span class="green">ROBIN</span>SWAP</span>
+        <span class="green track2" style="font-size:9px;">EARLY ACCESS &middot; ROBINHOOD CHAIN</span>
+      </div>
+    </div>
+    <nav class="navtabs desktop-nav" id="desktopTabs"></nav>
+    <div class="flex items-center gap-2">
+      <button class="wallet-btn btn-ghost" id="walletBtn"><span id="walletBtnContent">&#128179; CONNECT WALLET</span></button>
+      <button class="icon-btn menu-btn rounded" id="menuBtn" style="padding:8px;">&#9776;</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="tab" id="tab-swap">
+  <div class="hero fadeup">
+    <div class="pill"><span class="dot blink"></span> TESTNET LIVE &mdash; EARLY ACCESS &mdash; BUILD WITH US</div>
+    <h1 class="disp fw">Trade testnet assets.<br/>Build the future with us.</h1>
+    <p>Swap testnet crypto and stock-bridge assets in one place. Claim funds from the faucet and help us stress-test Robinswap before mainnet.</p>
+  </div>
+
+  <div class="eco-cta">
+    <a href="https://faucet.testnet.chain.robinhood.com/" target="_blank" class="btn-solid-dark fw track">&#128167; CLAIM TESTNET ASSETS</a>
+    <a href="https://explorer.testnet.chain.robinhood.com/" target="_blank" class="btn-outline fw track">&#128506; VIEW EXPLORER</a>
+  </div>
+
+  <div class="swapcard fadeup">
+    <div class="swapcard-head">
+      <span class="disp fw" style="font-size:13px;">SWAP &middot; TESTNET</span>
+      <div class="flex items-center gap-1">
+        <button class="icon-btn rounded" id="refreshBtn" style="padding:6px;">&#8635;</button>
+        <button class="icon-btn rounded" id="settingsBtn" style="padding:6px;">&#9881;</button>
+      </div>
+    </div>
+
+    <div id="slippagePanel" class="hidden" style="margin:0 16px 8px;background:var(--panel-alt);border:1px solid var(--border);border-radius:8px;padding:10px;">
+      <div class="faint track" style="font-size:10px;margin-bottom:6px;">SLIPPAGE TOLERANCE</div>
+      <div class="flex gap-2" id="slippageBtns"></div>
+    </div>
+
+    <div class="swap-box">
+      <div class="flex items-center justify-between">
+        <span class="swap-label">YOU PAY</span>
+        <span class="faint" style="font-size:10px;">Balance: <span id="fromBalance"></span> <button class="link-green fw6" id="maxBtn">MAX</button></span>
+      </div>
+      <div class="swap-amt-row">
+        <input id="fromAmount" placeholder="0.0" inputmode="decimal" value="1000"/>
+        <button class="token-btn" id="fromTokenBtn"></button>
+      </div>
+      <div class="usdrow" id="fromUsd"></div>
+    </div>
+
+    <div class="swap-flip-wrap">
+      <button class="swap-flip" id="flipBtn">&#8645;</button>
+    </div>
+
+    <div class="swap-box">
+      <div class="flex items-center justify-between">
+        <span class="swap-label">YOU RECEIVE</span>
+        <span class="faint" style="font-size:10px;">Balance: <span id="toBalance"></span></span>
+      </div>
+      <div class="swap-amt-row">
+        <div class="disp fw dim" id="toAmount" style="font-size:clamp(20px,6vw,26px);">0.0</div>
+        <button class="token-btn" id="toTokenBtn"></button>
+      </div>
+      <div class="usdrow" id="toUsd"></div>
+    </div>
+
+    <div id="routeTraceWrap"></div>
+
+    <div class="details-toggle">
+      <button class="details-toggle-btn" id="detailsToggleBtn">
+        <span id="rateLine"></span><span id="detailsChevron">&#9662;</span>
+      </button>
+      <div class="details-body hidden" id="detailsBody"></div>
+    </div>
+
+    <div class="cta-wrap">
+      <button class="cta-btn btn-primary" id="ctaBtn">&#128179; CONNECT WALLET</button>
+    </div>
+  </div>
+
+  <div class="foot-note">&#128101; Testnet stock-bridge assets are synthetic &mdash; built for early access trading and community stress-testing.</div>
+</section>
+
+<section class="tab hidden" id="tab-charts">
+  <div class="flex justify-between items-center wrap gap-3" style="margin-bottom:20px;">
+    <div>
+      <h2 class="disp fw" style="font-size:22px;">Testnet Market Data</h2>
+      <p class="dim" style="font-size:12px;margin-top:4px;">Live pricing across crypto and stock-bridge testnet pairs &mdash; help us stress-test the router.</p>
+    </div>
+    <div class="pair-pills" id="pairPills"></div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:20px;" id="statCards"></div>
+
+  <div class="chart-wrap">
+    <div class="flex justify-between items-center" style="margin-bottom:12px;">
+      <span class="disp fw" style="font-size:12px;" id="chartPairLabel"></span>
+      <div class="flex gap-1 panel-alt bordered rounded" style="padding:4px;" id="tfBtns"></div>
+    </div>
+    <svg id="chartSvg" viewBox="0 0 700 260" style="width:100%;height:260px;filter:drop-shadow(0 0 10px rgba(0,229,255,.35));"></svg>
+    <div class="flex justify-between faint" style="font-size:10px;margin-top:6px;" id="chartXLabels"></div>
+  </div>
+
+  <div class="swaps-table">
+    <div class="flex items-center gap-1" style="margin-bottom:12px;">
+      <span class="green glow">&#9679;</span><span class="disp fw" style="font-size:12px;">RECENT TESTNET SWAPS</span>
+      <span class="dot blink"></span>
+    </div>
+    <div class="swaps-head-row"><span>TIME</span><span>SIDE</span><span class="hidden" style="display:none;">PAIR</span><span class="text-right">AMOUNT</span><span class="text-right">PRICE</span></div>
+    <div id="swapsList" style="max-height:260px;overflow-y:auto;"></div>
+  </div>
+</section>
+
+<section class="tab hidden" id="tab-roadmap">
+  <div style="margin-bottom:28px;">
+    <h2 class="disp fw" style="font-size:22px;">The Testnet Roadmap</h2>
+    <p class="dim" style="font-size:12px;margin-top:4px;">From genesis to mainnet &mdash; built in the open, with the community. Select a phase for details.</p>
+  </div>
+  <div class="roadmap-desktop" id="rmDesktop"></div>
+  <div class="roadmap-mobile" id="rmMobile" style="margin-bottom:20px;"></div>
+  <div class="rm-detail fadeup" id="rmDetail"></div>
+</section>
+
+<section class="tab hidden" id="tab-whitepaper">
+  <div style="margin-bottom:24px;">
+    <h2 class="disp fw" style="font-size:22px;">Whitepaper</h2>
+    <p class="dim" style="font-size:12px;margin-top:4px;">A quick, high-hype look at Robinswap &mdash; full tokenomics and routing docs unlock as we approach mainnet.</p>
+  </div>
+  <div class="wp-frame">
+    <div class="wp-titlebar">
+      <div class="flex items-center gap-2">
+        <span class="rounded-full" style="width:10px;height:10px;background:#FF4D6A;display:inline-block;"></span>
+        <span class="rounded-full" style="width:10px;height:10px;background:#00E5FF;display:inline-block;"></span>
+        <span class="rounded-full" style="width:10px;height:10px;background:#AAD56D;display:inline-block;"></span>
+        <span class="faint" style="font-size:11px;margin-left:6px;">ROBIN_WHITEPAPER.md</span>
+      </div>
+      <span class="faint" style="font-size:10px;">v0.1-testnet &middot; 2026</span>
+    </div>
+    <div class="wp-grid">
+      <aside class="wp-toc">
+        <div class="faint track2" style="font-size:9px;margin-bottom:10px;">CONTENTS</div>
+        <div class="flex-col" id="wpToc"></div>
+      </aside>
+      <div class="wp-body">
+        <section id="wp-abstract">
+          <div class="wp-sec-head"><div class="wp-sec-icon green">&#128640;</div><span class="green" style="font-family:'JetBrains Mono';font-size:11px;font-weight:700;letter-spacing:.15em;">00</span><h3 class="disp fw" style="font-size:18px;">Abstract</h3></div>
+          <p class="dim" style="font-size:13px;">Robinswap is building the first stock-bridge DEX on Robinhood Chain &mdash; one venue for crypto swaps and testnet stock-bridge assets. We're in Early Access right now, which means the community builds it with us: claim testnet assets, push volume, break things, and help shape what ships at mainnet.</p>
+          <div class="panel-alt bordered rounded" style="padding:14px;margin-top:16px;">
+            <div class="green" style="font-size:12px;">&gt; STATUS: TESTNET EARLY ACCESS &middot; PHASE 2 &middot; COMMUNITY STRESS-TEST</div>
+          </div>
+        </section>
+        <div class="wp-divider"></div>
+        <section id="wp-tokenomics">
+          <div class="wp-sec-head"><div class="wp-sec-icon green">&#128274;</div><span class="green" style="font-size:11px;font-weight:700;letter-spacing:.15em;">01</span><h3 class="disp fw" style="font-size:18px;">Tokenomics</h3></div>
+          <p class="dim" style="font-size:13px;margin-bottom:16px;">$ROBIN tokenomics are being finalized alongside community feedback from the testnet phase.</p>
+          <div class="locked-box">
+            <div class="flex items-center gap-2" style="margin-bottom:10px;"><span class="faint">&#128274;</span><span class="faint track2 fw6" style="font-size:10px;">TOKENOMICS DOCUMENT</span></div>
+            <div class="green" style="font-size:12px;line-height:1.8;">
+              <div>&gt; ACCESS RESTRICTED</div><div>&gt; STATUS: COMING SOON</div><div>&gt; UNLOCKS: NEXT PROTOCOL PHASE</div>
+              <div>&gt; AWAITING DECRYPTION<span class="blink">&#9612;</span></div>
+            </div>
+            <div style="margin-top:14px;">
+              <div class="bar-line" style="width:92%;"></div><div class="bar-line" style="width:68%;"></div><div class="bar-line" style="width:80%;"></div><div class="bar-line" style="width:45%;"></div>
+            </div>
+          </div>
+        </section>
+        <div class="wp-divider"></div>
+        <section id="wp-routing">
+          <div class="wp-sec-head"><div class="wp-sec-icon green">&#128274;</div><span class="green" style="font-size:11px;font-weight:700;letter-spacing:.15em;">02</span><h3 class="disp fw" style="font-size:18px;">Routing Mechanics</h3></div>
+          <p class="dim" style="font-size:13px;margin-bottom:16px;">Full technical detail on the Robinswap Stock-Bridge router ships as we harden the architecture for mainnet.</p>
+          <div class="locked-box">
+            <div class="flex items-center gap-2" style="margin-bottom:10px;"><span class="faint">&#128274;</span><span class="faint track2 fw6" style="font-size:10px;">ROUTING MECHANICS DOCUMENT</span></div>
+            <div class="green" style="font-size:12px;line-height:1.8;">
+              <div>&gt; ACCESS RESTRICTED</div><div>&gt; STATUS: COMING SOON</div><div>&gt; UNLOCKS: NEXT PROTOCOL PHASE</div>
+              <div>&gt; AWAITING DECRYPTION<span class="blink">&#9612;</span></div>
+            </div>
+            <div style="margin-top:14px;">
+              <div class="bar-line" style="width:85%;"></div><div class="bar-line" style="width:60%;"></div><div class="bar-line" style="width:74%;"></div><div class="bar-line" style="width:38%;"></div>
+            </div>
+          </div>
+        </section>
+        <div class="wp-divider"></div>
+        <section id="wp-community">
+          <div class="wp-sec-head"><div class="wp-sec-icon green">&#128293;</div><span class="green" style="font-size:11px;font-weight:700;letter-spacing:.15em;">03</span><h3 class="disp fw" style="font-size:18px;">Get Involved</h3></div>
+          <p class="dim" style="font-size:13px;margin-bottom:16px;">Robinswap is built in the open. Here's how to jump in right now.</p>
+          <div style="margin-bottom:20px;">
+            <div class="involve-row"><span class="involve-num">1</span><div><div class="fw6" style="font-size:12px;">Claim testnet assets</div><div class="dim" style="font-size:12px;">Grab free $ROBIN and gas from the Robinhood Faucet.</div></div></div>
+            <div class="involve-row"><span class="involve-num">2</span><div><div class="fw6" style="font-size:12px;">Swap on testnet</div><div class="dim" style="font-size:12px;">Trade crypto and stock-bridge pairs to help stress-test the router.</div></div></div>
+            <div class="involve-row"><span class="involve-num">3</span><div><div class="fw6" style="font-size:12px;">Track it on-chain</div><div class="dim" style="font-size:12px;">Watch your transactions confirm live on the Robinhood Explorer.</div></div></div>
+            <div class="involve-row"><span class="involve-num">4</span><div><div class="fw6" style="font-size:12px;">Report what you find</div><div class="dim" style="font-size:12px;">Bugs and feedback shape what ships to mainnet.</div></div></div>
+          </div>
+          <div class="flex gap-2 wrap">
+            <a href="https://faucet.testnet.chain.robinhood.com/" target="_blank" class="btn-solid-dark fw track rounded" style="padding:10px 14px;display:inline-flex;align-items:center;gap:6px;font-size:11px;">&#128167; CLAIM TESTNET ASSETS</a>
+            <a href="https://explorer.testnet.chain.robinhood.com/" target="_blank" class="btn-outline fw track rounded" style="padding:10px 14px;display:inline-flex;align-items:center;gap:6px;font-size:11px;">&#128506; VIEW EXPLORER</a>
+          </div>
+          <div class="flex items-center gap-1" style="margin-top:20px;">
+            <span class="green" style="font-size:12px;">&gt; END OF DOCUMENT</span><span class="green blink" style="font-size:12px;">&#9612;</span>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="brand">
+          <svg viewBox="0 0 120 120" width="38" height="38">
+            <g stroke="#AAD56D" stroke-width="3.5" stroke-linecap="round"><line x1="90" y1="16" x2="90" y2="38"/><line x1="99" y1="8" x2="99" y2="32"/><line x1="108" y1="18" x2="108" y2="40"/></g>
+            <rect x="86" y="22" width="8" height="11" rx="2" fill="#AAD56D"/><rect x="95" y="14" width="8" height="13" rx="2" fill="#AAD56D"/><rect x="104" y="24" width="8" height="11" rx="2" fill="#AAD56D"/>
+            <rect x="16" y="86" width="56" height="15" rx="7.5" fill="#056734" stroke="#AAD56D" stroke-width="2.5" transform="rotate(-16 16 86)"/>
+            <rect x="48" y="86" width="56" height="15" rx="7.5" fill="#056734" stroke="#AAD56D" stroke-width="2.5" transform="rotate(16 48 86)"/>
+            <path d="M60 6 C33 6 14 27 14 54 C14 75 27 92 46 98 L74 98 C93 92 106 75 106 54 C106 29 89 8 64 6 Z" fill="#056734" stroke="#AAD56D" stroke-width="3.5"/>
+            <path d="M77 8 L94 -1 L87 19 Z" fill="#056734" stroke="#AAD56D" stroke-width="2.5" stroke-linejoin="round"/>
+            <ellipse cx="60" cy="58" rx="27" ry="25" fill="#0B0C0E"/>
+            <path d="M45 64 L60 56 L75 64 Q60 76 45 64 Z" fill="#F2A94E"/><path d="M46 65 Q60 80 74 65 Q60 72 46 65 Z" fill="#D97B1B"/>
+          </svg>
+          <div class="brand-text"><span class="disp fw" style="font-size:16px;"><span class="green">ROBIN</span>SWAP</span><span class="green track2" style="font-size:9px;">EARLY ACCESS &middot; ROBINHOOD CHAIN</span></div>
+        </div>
+        <p class="faint" style="font-size:11px;max-width:280px;margin-top:12px;line-height:1.6;">The first stock-bridge DEX on Robinhood Chain &mdash; currently live in Testnet Early Access. Build with us.</p>
+      </div>
+      <div>
+        <div class="faint track2" style="font-size:9px;margin-bottom:12px;">GET STARTED</div>
+        <div class="flex-col gap-2">
+          <a href="https://faucet.testnet.chain.robinhood.com/" target="_blank" class="eco-link"><div class="wp-sec-icon" style="background:rgba(170,213,109,.12);">&#128167;</div><div><div class="fw6" style="font-size:12px;">Robinhood Faucet &#8599;</div><div class="faint" style="font-size:10px;">Claim testnet $ROBIN + gas, free</div></div></a>
+          <a href="https://explorer.testnet.chain.robinhood.com/" target="_blank" class="eco-link"><div class="wp-sec-icon" style="background:rgba(170,213,109,.12);">&#128506;</div><div><div class="fw6" style="font-size:12px;">Robinhood Explorer &#8599;</div><div class="faint" style="font-size:10px;">Track your testnet trades live</div></div></a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div>ROBINSWAP &copy; 2026 &mdash; Testnet Early Access. Assets are synthetic. Not financial advice.</div>
+      <div class="flex items-center gap-2"><span class="green">&#9679;</span><span id="footBlock"></span><span style="border-left:1px solid var(--border2);height:12px;"></span><span>GAS 12 GWEI</span></div>
+    </div>
+  </div>
+</footer>
+
+<nav id="bottomnav"><div class="bn-grid" id="bnGrid"></div></nav>
+
+<div id="drawerRoot"></div>
+<div id="modalRoot"></div>
+<div id="toast"><div class="toast-box hidden" id="toastBox"><span class="green">&#10003;</span><span id="toastMsg"></span></div></div>
+
+</div>
+
+<script>
+/* ============ DATA ============ */
+const TOKENS = [
+  { symbol:"USDC", name:"USD Coin (Testnet)", category:"crypto", price:1.0, balance:12450.32, icon:"$", color:"#2775CA" },
+  { symbol:"ETH", name:"Ethereum (Testnet)", category:"crypto", price:3480.52, balance:4.128, icon:"Ξ", color:"#8B93A5" },
+  { symbol:"WBTC", name:"Wrapped Bitcoin (Testnet)", category:"crypto", price:67210.0, balance:0.214, icon:"₿", color:"#F7931A" },
+  { symbol:"SOL", name:"Solana (Testnet)", category:"crypto", price:168.34, balance:82.5, icon:"◎", color:"#9945FF" },
+  { symbol:"rGOV", name:"Robinswap Gov Yield (Testnet)", category:"synthetic", price:100.42, balance:320.11, icon:"R", color:"#00E5FF" },
+  { symbol:"rUSD", name:"Robinswap Dollar Yield (Testnet)", category:"synthetic", price:1.03, balance:5210.0, icon:"R", color:"#00E5FF" },
+  { symbol:"tAAPL", name:"Testnet Apple Stock-Bridge", category:"synthetic", price:227.18, balance:12.4, icon:"A", color:"#00E5FF" },
+  { symbol:"tTSLA", name:"Testnet Tesla Stock-Bridge", category:"synthetic", price:318.55, balance:3.8, icon:"T", color:"#00E5FF" },
+  { symbol:"tCOIN", name:"Testnet Coinbase Stock-Bridge", category:"synthetic", price:245.9, balance:6.1, icon:"C", color:"#00E5FF" },
+];
+const PAIRS = [
+  { id:"usdc-rgov", quote:"rGOV", label:"USDC / rGOV" },
+  { id:"eth-taapl", quote:"tAAPL", label:"ETH / tAAPL" },
+  { id:"usdc-rusd", quote:"rUSD", label:"USDC / rUSD" },
+  { id:"sol-ttsla", quote:"tTSLA", label:"SOL / tTSLA" },
+  { id:"eth-tcoin", quote:"tCOIN", label:"ETH / tCOIN" },
+];
+const TIMEFRAMES = ["1D","1W","1M","ALL"];
+const TABS = [
+  { id:"swap", label:"Swap", short:"Swap", icon:"&#8645;" },
+  { id:"charts", label:"Charts", short:"Charts", icon:"&#128202;" },
+  { id:"roadmap", label:"Roadmap", short:"Roadmap", icon:"&#128506;" },
+  { id:"whitepaper", label:"Whitepaper", short:"Paper", icon:"&#128214;" },
+];
+const ROADMAP = [
+  { phase:"PHASE 1", title:"Testnet Genesis", status:"completed", period:"Q1 – Q2 2026",
+    desc:"The foundational swap engine and stock-bridge routing went live for early builders — kicking off community testing from day one.",
+    items:["Core AMM engine deployed to public testnet","Robinhood Chain faucet and explorer integrated","First 5,000 wallets onboarded via Early Access"], icon:"&#10003;" },
+  { phase:"PHASE 2", title:"Community Stress-Test", status:"active", period:"Q3 2026 — Present",
+    desc:"We're in it together — testnet liquidity is live across crypto and stock-bridge pairs, and the community is actively hunting bugs and pushing volume.",
+    items:["Stock-bridge testnet pairs live (tAAPL, tTSLA, tCOIN)","Community bug-bounty and testnet leaderboard running","12,000+ wallets actively swapping on testnet"], icon:"&#9679;" },
+  { phase:"PHASE 3", title:"Early Access Expansion", status:"upcoming", period:"Targeting Q1 2027",
+    desc:"Opening the doors wider — more pairs, deeper liquidity incentives, and an ambassador program to grow the builder community.",
+    items:["Expanded testnet pair list and deeper liquidity pools","Testnet rewards program for top traders and LPs","Robinswap Ambassador & community-builder program"], icon:"&#8594;" },
+  { phase:"PHASE 4", title:"Mainnet Countdown", status:"locked", period:"Future",
+    desc:"The final stretch before Robinswap goes live for real — audits, hardening, and the token generation event.",
+    items:["Independent security audits ahead of mainnet","Mainnet migration plan and liquidity bootstrap","$ROBIN token generation event (TGE)"], icon:"&#128274;" },
+];
+const STATUS_COLOR = { completed:"#AAD56D", active:"#AAD56D", upcoming:"#00E5FF", locked:"#54585F" };
+const STATUS_LABEL = { completed:"COMPLETED", active:"ACTIVE", upcoming:"UPCOMING", locked:"LOCKED" };
+const WP_SECTIONS = [ {id:"abstract",label:"00 / Abstract"},{id:"tokenomics",label:"01 / Tokenomics"},{id:"routing",label:"02 / Routing Mechanics"},{id:"community",label:"03 / Get Involved"} ];
+
+/* ============ HELPERS ============ */
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return h;}
+function mulberry32(seed){let t=seed;return function(){t|=0;t=(t+0x6d2b79f5)|0;let r=Math.imul(t^(t>>>15),1|t);r=(r+Math.imul(r^(r>>>7),61|r))^r;return((r^(r>>>14))>>>0)/4294967296;};}
+function tokenBySymbol(s){return TOKENS.find(t=>t.symbol===s);}
+function fmtUSD(n,d=2){return "$"+n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtCompact(n){if(n>=1e9)return "$"+(n/1e9).toFixed(2)+"B";if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n.toFixed(2);}
+function computeToAmount(amountStr,from,to){const amt=parseFloat(amountStr);if(!amt||amt<=0||!from||!to)return "";const out=(amt*from.price)/to.price;if(out<1)return out.toFixed(6);if(out<1000)return out.toFixed(4);return out.toFixed(2);}
+function estimateImpact(amountStr,from){const amt=parseFloat(amountStr)||0;const usd=amt*(from?from.price:0);return Math.min(2.4,0.02+(usd/250000)*1.6);}
+const TF_CONFIG = {
+  "1D":{n:24,label:i=>`${i}:00`},
+  "1W":{n:7,label:i=>["MON","TUE","WED","THU","FRI","SAT","SUN"][i]},
+  "1M":{n:30,label:i=>`D${i+1}`},
+  "ALL":{n:12,label:i=>["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][i]},
+};
+function generateSeries(pairId,timeframe){
+  const pair=PAIRS.find(p=>p.id===pairId); const quote=tokenBySymbol(pair.quote);
+  const cfg=TF_CONFIG[timeframe]; const rand=mulberry32(hashStr(pairId+timeframe)||1);
+  const base=quote.price; let price=base*(0.9+rand()*0.08); const points=[];
+  for(let i=0;i<cfg.n;i++){const delta=(rand()-0.48)*base*0.028;price=Math.max(base*0.7,price+delta);points.push({t:cfg.label(i),price:Number(price.toFixed(4))});}
+  points[points.length-1].price=Number(base.toFixed(4));
+  const first=points[0].price,last=points[points.length-1].price,changePct=((last-first)/first)*100;
+  const high=Math.max(...points.map(p=>p.price)),low=Math.min(...points.map(p=>p.price));
+  const volume=900000+rand()*5200000, tvl=8000000+rand()*41000000;
+  return {points,changePct,high,low,volume,tvl,price:last};
+}
+
+/* ============ STATE ============ */
+let state = {
+  activeTab:"swap", walletStatus:"disconnected", walletAddr:"",
+  fromToken:tokenBySymbol("USDC"), toToken:tokenBySymbol("rGOV"), fromAmount:"1000",
+  slippage:0.5, slippageOpen:false, modalSide:null, modalFilter:"all", modalQuery:"",
+  detailsOpen:false, swapState:"idle",
+  pairId:PAIRS[0].id, timeframe:"1D", swaps:[], rngRef:null,
+  roadmapSelected:1, toastTimer:null,
+};
+
+/* ============ NAV ============ */
+function renderNav(){
+  document.getElementById("desktopTabs").innerHTML = TABS.map(t=>`<button class="navtab ${state.activeTab===t.id?'active':''}" data-tab="${t.id}">${t.label.toUpperCase()}</button>`).join("");
+  document.getElementById("bnGrid").innerHTML = TABS.map(t=>`<button class="bn-item ${state.activeTab===t.id?'active':''}" data-tab="${t.id}"><span>${t.icon}</span><span>${t.short.toUpperCase()}</span></button>`).join("");
+  document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{state.activeTab=btn.getAttribute("data-tab");selectTab();}));
+}
+function selectTab(){
+  ["swap","charts","roadmap","whitepaper"].forEach(id=>{
+    document.getElementById("tab-"+id).classList.toggle("hidden", state.activeTab!==id);
+  });
+  renderNav();
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(state.activeTab==="charts") renderCharts();
+  if(state.activeTab==="roadmap") renderRoadmap();
+}
+
+/* ============ WALLET / TOAST ============ */
+function toast(msg){
+  const box=document.getElementById("toastBox"); document.getElementById("toastMsg").textContent=msg;
+  box.classList.remove("hidden"); if(state.toastTimer) clearTimeout(state.toastTimer);
+  state.toastTimer=setTimeout(()=>box.classList.add("hidden"),2600);
+}
+function handleConnect(){
+  if(state.walletStatus==="connected") return;
+  state.walletStatus="connecting"; renderWalletBtn();
+  setTimeout(()=>{state.walletStatus="connected";state.walletAddr="0x71C7… 9E3F";renderWalletBtn();renderSwap();toast("Wallet connected — you're on testnet");},900);
+}
+function renderWalletBtn(){
+  const btn=document.getElementById("walletBtn"); const c=document.getElementById("walletBtnContent");
+  btn.classList.remove("btn-outline","btn-ghost");
+  if(state.walletStatus==="connecting"){btn.classList.add("btn-ghost");c.innerHTML="&#8987; CONNECTING";}
+  else if(state.walletStatus==="connected"){btn.classList.add("btn-outline");c.innerHTML=`<span class="dot blink" style="display:inline-block;"></span> ${state.walletAddr}`;}
+  else {btn.classList.add("btn-ghost");c.innerHTML="&#128179; CONNECT WALLET";}
+}
+document.getElementById("walletBtn").addEventListener("click",handleConnect);
+
+/* ============ SWAP TAB ============ */
+function tokenGlyphHTML(tok,size=22){
+  return `<span class="token-glyph" style="width:${size}px;height:${size}px;background:${tok.color}22;color:${tok.color};border:1px solid ${tok.color}55;font-size:${size*0.42}px;">${tok.icon}</span>`;
+}
+function categoryTagHTML(cat){
+  if(cat==="synthetic") return `<span class="cyan rounded" style="background:rgba(0,229,255,.1);padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:.05em;">STOCK-BRIDGE</span>`;
+  return `<span class="faint rounded" style="border:1px solid var(--border);padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:.05em;">TESTNET</span>`;
+}
+function renderSwap(){
+  const {fromToken,toToken,fromAmount}=state;
+  document.getElementById("fromBalance").textContent=fromToken.balance.toLocaleString();
+  document.getElementById("toBalance").textContent=toToken.balance.toLocaleString();
+  document.getElementById("fromTokenBtn").innerHTML=`${tokenGlyphHTML(fromToken)}<span class="fw6" style="font-size:13px;">${fromToken.symbol}</span><span class="dim">&#9662;</span>`;
+  document.getElementById("toTokenBtn").innerHTML=`${tokenGlyphHTML(toToken)}<span class="fw6" style="font-size:13px;">${toToken.symbol}</span><span class="dim">&#9662;</span>`;
+  const toAmt=computeToAmount(fromAmount,fromToken,toToken);
+  document.getElementById("toAmount").textContent=toAmt||"0.0";
+  const usdValue=(parseFloat(fromAmount)||0)*fromToken.price;
+  document.getElementById("fromUsd").textContent=fmtUSD(usdValue);
+  document.getElementById("toUsd").textContent=fmtUSD((parseFloat(toAmt)||0)*toToken.price);
+  const isStockBridge = toToken.category==="synthetic";
+  const amountValid = parseFloat(fromAmount)>0;
+
+  document.getElementById("rateLine").textContent = `1 ${fromToken.symbol} = ${(fromToken.price/toToken.price).toFixed(6)} ${toToken.symbol}`;
+  const impact=estimateImpact(fromAmount,fromToken);
+  const minRecv = (parseFloat(toAmt)||0) * (1-state.slippage/100);
+  document.getElementById("detailsBody").innerHTML = `
+    <div class="row"><span class="faint">Price impact</span><span class="${impact>1?'red':'green'}">${impact.toFixed(2)}%</span></div>
+    <div class="row"><span class="faint">Network fee (est.)</span><span class="dim">$0.38</span></div>
+    <div class="row"><span class="faint">Minimum received</span><span class="dim">${minRecv.toFixed(4)} ${toToken.symbol}</span></div>
+    <div class="row"><span class="faint">Route</span><span class="${isStockBridge?'cyan':'dim'}">${isStockBridge?'Robinswap Stock-Bridge (Testnet)':'Direct AMM (Testnet)'}</span></div>
+  `;
+
+  const rtWrap=document.getElementById("routeTraceWrap");
+  if(isStockBridge && amountValid){
+    const hops=[
+      {label:`${fromToken.symbol}_LIQUIDITY_POOL`,ms:12},
+      {label:"ROBINSWAP_SMART_ROUTER",ms:8},
+      {label:"STOCK_BRIDGE_NODE (TESTNET)",ms:31,tag:"SYNTHETIC ✓"},
+      {label:`${toToken.symbol}_SETTLEMENT_VAULT`,ms:19},
+    ];
+    rtWrap.innerHTML = `
+      <div class="route-trace fadeup" style="margin:12px 16px 0;">
+        <div class="flex justify-between items-center" style="margin-bottom:10px;">
+          <div class="flex items-center gap-1"><span class="cyan glow">&#128225;</span><span class="cyan fw6 track2" style="font-size:11px;">STOCK-BRIDGE ROUTE TRACE</span></div>
+          <div class="flex items-center gap-1 rounded" style="background:rgba(170,213,109,.12);padding:2px 6px;"><span class="green">&#9889;</span><span class="green fw6" style="font-size:9px;">ROUTER ACTIVE</span></div>
+        </div>
+        ${hops.map(h=>`<div class="rt-hop"><span class="dim">${h.label}</span><span class="flex items-center gap-2"><span class="green" style="font-size:10px;">${h.tag||''}</span><span class="faint">${h.ms}ms</span><span class="green">✓</span></span></div>`).join("")}
+        <div class="flex items-center gap-1" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">
+          <span class="green" style="font-size:11px;">&gt; DeFi-to-Stock Router Active &mdash; Routed via Robinswap Stock-Bridge (Testnet)</span><span class="green blink" style="font-size:11px;">&#9612;</span>
+        </div>
+      </div>`;
+  } else { rtWrap.innerHTML=""; }
+
+  const cta=document.getElementById("ctaBtn");
+  cta.classList.remove("btn-primary","btn-outline");
+  let label, disabled=false;
+  if(state.walletStatus!=="connected"){label="&#128179; CONNECT WALLET";cta.classList.add("btn-primary");}
+  else if(!amountValid){label="ENTER AN AMOUNT";cta.classList.add("btn-primary");disabled=true;}
+  else if(state.swapState==="loading"){label="&#8987; SWAPPING…";cta.classList.add("btn-primary");disabled=true;}
+  else if(state.swapState==="done"){label="&#10003; SWAP CONFIRMED";cta.classList.add("btn-outline");}
+  else {label="SWAP (TESTNET)";cta.classList.add("btn-primary");}
+  cta.innerHTML=label; cta.disabled=disabled;
+}
+document.getElementById("fromAmount").addEventListener("input",e=>{
+  const v=e.target.value; if(/^[0-9]*\.?[0-9]*$/.test(v)){state.fromAmount=v;renderSwap();}
+  else e.target.value=state.fromAmount;
+});
+document.getElementById("maxBtn").addEventListener("click",()=>{state.fromAmount=String(state.fromToken.balance);document.getElementById("fromAmount").value=state.fromAmount;renderSwap();});
+document.getElementById("flipBtn").addEventListener("click",()=>{
+  const btn=document.getElementById("flipBtn"); btn.style.transform="rotate(180deg)"; setTimeout(()=>btn.style.transform="rotate(0deg)",350);
+  const toAmt=computeToAmount(state.fromAmount,state.fromToken,state.toToken);
+  const prevFrom=state.fromToken, prevTo=state.toToken;
+  state.fromToken=prevTo; state.toToken=prevFrom; state.fromAmount=toAmt||"0";
+  document.getElementById("fromAmount").value=state.fromAmount; renderSwap();
+});
+document.getElementById("refreshBtn").addEventListener("click",()=>toast("Rates refreshed"));
+document.getElementById("settingsBtn").addEventListener("click",()=>{
+  state.slippageOpen=!state.slippageOpen;
+  document.getElementById("slippagePanel").classList.toggle("hidden",!state.slippageOpen);
+});
+document.getElementById("slippageBtns").innerHTML=[0.1,0.5,1.0].map(v=>`<button class="btn-ghost rounded ${state.slippage===v?'btn-outline':''}" data-slip="${v}" style="padding:5px 10px;font-size:11px;font-weight:600;">${v}%</button>`).join("");
+document.getElementById("slippageBtns").addEventListener("click",e=>{
+  const b=e.target.closest("[data-slip]"); if(!b) return;
+  state.slippage=parseFloat(b.getAttribute("data-slip"));
+  document.getElementById("slippageBtns").innerHTML=[0.1,0.5,1.0].map(v=>`<button class="btn-ghost rounded ${state.slippage===v?'btn-outline':''}" data-slip="${v}" style="padding:5px 10px;font-size:11px;font-weight:600;">${v}%</button>`).join("");
+  renderSwap();
+});
+document.getElementById("detailsToggleBtn").addEventListener("click",()=>{
+  state.detailsOpen=!state.detailsOpen;
+  document.getElementById("detailsBody").classList.toggle("hidden",!state.detailsOpen);
+  document.getElementById("detailsChevron").innerHTML = state.detailsOpen? "&#9652;" : "&#9662;";
+});
+document.getElementById("ctaBtn").addEventListener("click",()=>{
+  if(state.walletStatus!=="connected"){handleConnect();return;}
+  if(!(parseFloat(state.fromAmount)>0)) return;
+  state.swapState="loading"; renderSwap();
+  setTimeout(()=>{
+    const toAmt=computeToAmount(state.fromAmount,state.fromToken,state.toToken);
+    state.swapState="done"; renderSwap();
+    toast(`Swapped ${state.fromAmount} ${state.fromToken.symbol} → ${toAmt} ${state.toToken.symbol} (Testnet)`);
+    setTimeout(()=>{state.swapState="idle";renderSwap();},1800);
+  },1200);
+});
+document.getElementById("fromTokenBtn").addEventListener("click",()=>openModal("from"));
+document.getElementById("toTokenBtn").addEventListener("click",()=>openModal("to"));
+
+/* ============ TOKEN MODAL ============ */
+function openModal(side){ state.modalSide=side; state.modalFilter="all"; state.modalQuery=""; renderModal(); }
+function closeModal(){ state.modalSide=null; document.getElementById("modalRoot").innerHTML=""; }
+function renderModal(){
+  if(!state.modalSide){document.getElementById("modalRoot").innerHTML="";return;}
+  const exclude = state.modalSide==="from" ? state.toToken.symbol : state.fromToken.symbol;
+  const filtered = TOKENS.filter(t=>{
+    if(t.symbol===exclude) return false;
+    if(state.modalFilter!=="all" && t.category!==state.modalFilter) return false;
+    const q=state.modalQuery.trim().toLowerCase();
+    if(!q) return true;
+    return t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q);
+  });
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal fadeup" id="modalBox">
+        <div class="modal-head"><span class="disp fw" style="font-size:14px;">SELECT TESTNET TOKEN</span><button class="icon-btn rounded" id="modalCloseBtn" style="padding:4px;">&#10005;</button></div>
+        <div class="modal-search"><span class="faint">&#128269;</span><input id="modalSearchInput" placeholder="Search name or symbol" value="${state.modalQuery}"/></div>
+        <div class="modal-filters">
+          <button class="filter-chip ${state.modalFilter==='all'?'btn-outline':'btn-ghost dim'}" data-filter="all">All</button>
+          <button class="filter-chip ${state.modalFilter==='crypto'?'btn-outline':'btn-ghost dim'}" data-filter="crypto">Crypto</button>
+          <button class="filter-chip ${state.modalFilter==='synthetic'?'btn-outline':'btn-ghost dim'}" data-filter="synthetic">Stock-Bridge</button>
+        </div>
+        <div class="modal-list">
+          ${filtered.length===0 ? `<div class="faint text-center" style="padding:32px 0;font-size:12px;">No tokens match your search.</div>` :
+          filtered.map(t=>`
+            <div class="modal-row" data-symbol="${t.symbol}">
+              <div class="flex items-center gap-2">${tokenGlyphHTML(t,30)}<div class="flex-col"><span style="font-size:13px;font-weight:600;">${t.symbol}</span><span class="faint" style="font-size:11px;">${t.name}</span></div></div>
+              <div class="flex-col" style="align-items:flex-end;"><span class="dim" style="font-size:12px;">${t.balance.toLocaleString()}</span>${categoryTagHTML(t.category)}</div>
+            </div>`).join("")}
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("modalOverlay").addEventListener("click",e=>{if(e.target.id==="modalOverlay") closeModal();});
+  document.getElementById("modalCloseBtn").addEventListener("click",closeModal);
+  document.getElementById("modalSearchInput").addEventListener("input",e=>{state.modalQuery=e.target.value;renderModal();document.getElementById("modalSearchInput").focus();document.getElementById("modalSearchInput").selectionStart=document.getElementById("modalSearchInput").value.length;});
+  document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{state.modalFilter=b.getAttribute("data-filter");renderModal();}));
+  document.querySelectorAll("[data-symbol]").forEach(row=>row.addEventListener("click",()=>{
+    const sym=row.getAttribute("data-symbol"); const tok=tokenBySymbol(sym);
+    if(state.modalSide==="from"){ if(tok.symbol===state.toToken.symbol) state.toToken=state.fromToken; state.fromToken=tok; }
+    else { if(tok.symbol===state.fromToken.symbol) state.fromToken=state.toToken; state.toToken=tok; }
+    closeModal(); renderSwap();
+  }));
+}
+
+/* ============ CHARTS TAB ============ */
+function renderPairPills(){
+  document.getElementById("pairPills").innerHTML = PAIRS.map(p=>`<button class="pair-pill ${state.pairId===p.id?'active':''}" data-pair="${p.id}">${p.label}</button>`).join("");
+  document.querySelectorAll("[data-pair]").forEach(b=>b.addEventListener("click",()=>{state.pairId=b.getAttribute("data-pair");initSwapsFeed();renderCharts();}));
+}
+function renderChartSvg(series){
+  const w=700,h=260,padL=40,padR=10,padT=10,padB=20;
+  const prices=series.points.map(p=>p.price); const min=Math.min(...prices), max=Math.max(...prices);
+  const range = (max-min)||1;
+  const stepX=(w-padL-padR)/(series.points.length-1);
+  const pts = series.points.map((p,i)=>{
+    const x=padL+i*stepX; const y=padT+(1-(p.price-min)/range)*(h-padT-padB);
+    return [x,y];
+  });
+  const linePath = pts.map((pt,i)=>(i===0?"M":"L")+pt[0].toFixed(1)+","+pt[1].toFixed(1)).join(" ");
+  const areaPath = linePath + ` L${pts[pts.length-1][0].toFixed(1)},${h-padB} L${pts[0][0].toFixed(1)},${h-padB} Z`;
+  const gridLines = [0,0.25,0.5,0.75,1].map(f=>{
+    const y=padT+f*(h-padT-padB);
+    return `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="#1B1E22" stroke-dasharray="3 3"/>`;
+  }).join("");
+  document.getElementById("chartSvg").innerHTML = `
+    <defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00E5FF" stop-opacity="0.35"/><stop offset="100%" stop-color="#00E5FF" stop-opacity="0"/></linearGradient></defs>
+    ${gridLines}
+    <path d="${areaPath}" fill="url(#areaFill)"/>
+    <path d="${linePath}" fill="none" stroke="#00E5FF" stroke-width="2"/>
+  `;
+  const first=series.points[0].t, mid=series.points[Math.floor(series.points.length/2)].t, last=series.points[series.points.length-1].t;
+  document.getElementById("chartXLabels").innerHTML = `<span>${first}</span><span>${mid}</span><span>${last}</span>`;
+}
+function renderCharts(){
+  renderPairPills();
+  const pair=PAIRS.find(p=>p.id===state.pairId);
+  const series=generateSeries(state.pairId,state.timeframe);
+  document.getElementById("statCards").innerHTML = `
+    <div class="stat-card"><div class="stat-label">PRICE</div><div class="flex items-center gap-2 wrap"><span class="stat-val">${fmtUSD(series.price)}</span><span class="${series.changePct>=0?'green':'red'} fw6" style="font-size:11px;">${series.changePct>=0?'▲':'▼'} ${Math.abs(series.changePct).toFixed(2)}%</span></div></div>
+    <div class="stat-card"><div class="stat-label">24H VOLUME</div><div class="stat-val">${fmtCompact(series.volume)}</div></div>
+    <div class="stat-card"><div class="stat-label">TVL</div><div class="stat-val">${fmtCompact(series.tvl)}</div></div>
+    <div class="stat-card"><div class="stat-label">24H HIGH / LOW</div><div class="stat-val" style="font-size:13px;">${fmtUSD(series.high)} <span class="faint">/</span> ${fmtUSD(series.low)}</div></div>
+  `;
+  document.getElementById("chartPairLabel").textContent = pair.label;
+  document.getElementById("tfBtns").innerHTML = TIMEFRAMES.map(tf=>`<button class="tf-btn ${state.timeframe===tf?'active':''}" data-tf="${tf}">${tf}</button>`).join("");
+  document.querySelectorAll("[data-tf]").forEach(b=>b.addEventListener("click",()=>{state.timeframe=b.getAttribute("data-tf");renderCharts();}));
+  renderChartSvg(series);
+  renderSwapsList();
+}
+function makeSwap(p,price,rand,seedExtra){
+  const side=rand()>0.5?"BUY":"SELL"; const amount=(0.05+rand()*4.2).toFixed(3); const px=price*(1+(rand()-0.5)*0.006);
+  return {id:seedExtra+"-"+rand(), time:new Date().toLocaleTimeString("en-US",{hour12:false}), side, pair:p.label, amount, price:px.toFixed(2)};
+}
+let swapsInterval=null;
+function initSwapsFeed(){
+  state.rngRef = mulberry32(hashStr(state.pairId)+7);
+  const p=PAIRS.find(x=>x.id===state.pairId); const s=generateSeries(state.pairId,"1D");
+  state.swaps = Array.from({length:6}).map((_,i)=>makeSwap(p,s.price,state.rngRef,i));
+  if(swapsInterval) clearInterval(swapsInterval);
+  swapsInterval = setInterval(()=>{
+    const next=makeSwap(p,s.price,state.rngRef,Date.now());
+    state.swaps=[next,...state.swaps].slice(0,9);
+    renderSwapsList();
+  },2400);
+}
+function renderSwapsList(){
+  document.getElementById("swapsList").innerHTML = state.swaps.map(s=>`
+    <div class="swaps-row">
+      <span class="faint">${s.time}</span>
+      <span><span class="side-tag ${s.side==='BUY'?'green':'red'}" style="background:${s.side==='BUY'?'rgba(170,213,109,.12)':'rgba(255,77,106,.1)'};">${s.side}</span></span>
+      <span class="dim" style="display:none;"></span>
+      <span class="text-right dim">${s.amount}</span>
+      <span class="text-right">${fmtUSD(parseFloat(s.price))}</span>
+    </div>`).join("");
+}
+
+/* ============ ROADMAP TAB ============ */
+function renderRoadmap(){
+  document.getElementById("rmDesktop").innerHTML = `
+    <div class="rm-track">
+      ${ROADMAP.map((it,i)=>{
+        const c=STATUS_COLOR[it.status]; const dim=it.status==="locked"?0.55:1;
+        const line = i<ROADMAP.length-1 ? `<div class="rm-line"><div class="rm-line-fill" style="width:${[100,42,0][i]}%;"></div></div>` : "";
+        return `<button class="rm-node" data-rm="${i}" style="opacity:${dim};">
+          <div class="rm-circle" style="border:1.5px solid ${c};background:${it.status==='active'?'rgba(170,213,109,.12)':'#121417'};${it.status==='active'?'animation:pulsering 2s infinite;':''}${state.roadmapSelected===i?`box-shadow:0 0 16px ${c}66;`:''}"><span style="color:${c};font-size:16px;">${it.icon}</span></div>
+          <div class="flex-col items-center text-center"><span class="disp fw" style="font-size:11px;">${it.phase}</span><span class="fw6 track2" style="font-size:9px;color:${c};margin-top:2px;">${STATUS_LABEL[it.status]}</span></div>
+        </button>${line}`;
+      }).join("")}
+    </div>`;
+  document.getElementById("rmMobile").innerHTML = ROADMAP.map((it,i)=>{
+    const c=STATUS_COLOR[it.status]; const dim=it.status==="locked"?0.6:1; const isSel=state.roadmapSelected===i;
+    const line = i<ROADMAP.length-1 ? `<div class="rm-mobile-line" style="background:${i===0?'linear-gradient(to bottom,#AAD56D,#00E5FF)':'var(--border)'};"></div>` : "";
+    return `<div class="flex gap-3">
+      <div class="flex-col items-center">
+        <div class="rm-mobile-dot" style="border:1.5px solid ${c};background:${it.status==='active'?'rgba(170,213,109,.12)':'#121417'};opacity:${dim};${isSel?`box-shadow:0 0 14px ${c}66;`:''}"><span style="color:${c};font-size:14px;">${it.icon}</span></div>
+        ${line}
+      </div>
+      <button class="rm-mobile-btn" data-rm="${i}" style="text-align:left;flex:1;padding-bottom:16px;opacity:${dim};">
+        <div class="rounded" style="border:1px solid ${isSel?c+'88':'var(--border)'};background:${isSel?'#16181B':'transparent'};padding:10px 12px;">
+          <div class="flex justify-between items-center"><span class="disp fw" style="font-size:11px;">${it.phase}</span><span class="fw6 track2" style="font-size:8px;color:${c};">${STATUS_LABEL[it.status]}</span></div>
+          <div class="dim" style="font-size:12px;margin-top:4px;">${it.title}</div>
+        </div>
+      </button>
+    </div>`;
+  }).join("");
+  document.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",()=>{state.roadmapSelected=parseInt(b.getAttribute("data-rm"));renderRoadmap();}));
+  renderRoadmapDetail();
+}
+function renderRoadmapDetail(){
+  const item=ROADMAP[state.roadmapSelected]; const c=STATUS_COLOR[item.status];
+  const ctaRow = item.status==="active" ? `
+    <div class="flex gap-2 wrap" style="margin-top:20px;">
+      <a href="https://faucet.testnet.chain.robinhood.com/" target="_blank" class="btn-solid-dark fw track rounded" style="padding:8px 14px;display:inline-flex;align-items:center;gap:6px;font-size:11px;">&#128167; CLAIM TESTNET ASSETS</a>
+      <a href="https://explorer.testnet.chain.robinhood.com/" target="_blank" class="btn-outline fw track rounded" style="padding:8px 14px;display:inline-flex;align-items:center;gap:6px;font-size:11px;">&#128506; VIEW EXPLORER</a>
+    </div>` : "";
+  const decryptNote = state.roadmapSelected===ROADMAP.length-1 ? `<div class="flex items-center gap-1 faint" style="margin-top:16px;font-size:11px;"><span class="green blink">&#9612;</span><span>Details will decrypt as this phase approaches.</span></div>` : "";
+  document.getElementById("rmDetail").style.border = `1px solid ${c}55`;
+  document.getElementById("rmDetail").innerHTML = `
+    <div class="flex justify-between wrap gap-3" style="align-items:flex-start;">
+      <div>
+        <span class="fw track2" style="font-size:11px;color:${c};">${item.phase} &mdash; ${STATUS_LABEL[item.status]}</span>
+        <h3 class="disp fw" style="font-size:clamp(17px,4.5vw,20px);margin:6px 0;">${item.title}</h3>
+        <p class="dim" style="font-size:13px;max-width:540px;">${item.desc}</p>
+      </div>
+      <div class="panel-alt bordered rounded" style="padding:6px 12px;flex-shrink:0;"><span class="faint" style="font-size:10px;">${item.period}</span></div>
+    </div>
+    <div style="margin-top:20px;">${item.items.map(line=>`<div class="flex gap-2" style="font-size:12px;margin-bottom:6px;"><span style="color:${c};">&gt;</span><span class="dim">${line}</span></div>`).join("")}</div>
+    ${ctaRow}${decryptNote}
+  `;
+}
+
+/* ============ WHITEPAPER TOC ============ */
+document.getElementById("wpToc").innerHTML = WP_SECTIONS.map(s=>`<button class="toc-link ${s.id==='abstract'?'active':''}" data-wp="${s.id}">${s.label}</button>`).join("");
+document.querySelectorAll("[data-wp]").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("[data-wp]").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  document.getElementById("wp-"+b.getAttribute("data-wp")).scrollIntoView({behavior:"smooth",block:"start"});
+}));
+
+/* ============ DRAWER (mobile menu) ============ */
+function openDrawer(){
+  document.getElementById("drawerRoot").innerHTML = `
+    <div class="drawer-overlay" id="drawerOverlay">
+      <div class="drawer" id="drawerBox">
+        <div class="drawer-head"><span class="fw track2" style="font-size:12px;">MENU</span><button class="icon-btn rounded" id="drawerCloseBtn" style="padding:4px;">&#10005;</button></div>
+        <div class="drawer-body">
+          <div>
+            <div class="faint track2" style="font-size:9px;margin-bottom:8px;">NAVIGATE</div>
+            <div class="flex-col gap-1">${TABS.map(t=>`<button class="drawer-navbtn ${state.activeTab===t.id?'active':''}" data-drawer-tab="${t.id}"><span>${t.icon}</span>${t.label}</button>`).join("")}</div>
+          </div>
+          <div>
+            <div class="faint track2" style="font-size:9px;margin-bottom:8px;">GET STARTED</div>
+            <div class="flex-col gap-2">
+              <a href="https://faucet.testnet.chain.robinhood.com/" target="_blank" class="eco-link"><span class="green">&#128167;</span><div><div class="fw6" style="font-size:12px;">Robinhood Faucet &#8599;</div><div class="faint" style="font-size:10px;">Claim testnet $ROBIN + gas, free</div></div></a>
+              <a href="https://explorer.testnet.chain.robinhood.com/" target="_blank" class="eco-link"><span class="green">&#128506;</span><div><div class="fw6" style="font-size:12px;">Robinhood Explorer &#8599;</div><div class="faint" style="font-size:10px;">Track your testnet trades live</div></div></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("drawerOverlay").addEventListener("click",e=>{if(e.target.id==="drawerOverlay") closeDrawer();});
+  document.getElementById("drawerCloseBtn").addEventListener("click",closeDrawer);
+  document.querySelectorAll("[data-drawer-tab]").forEach(b=>b.addEventListener("click",()=>{state.activeTab=b.getAttribute("data-drawer-tab");selectTab();closeDrawer();}));
+}
+function closeDrawer(){ document.getElementById("drawerRoot").innerHTML=""; }
+document.getElementById("menuBtn").addEventListener("click",openDrawer);
+
+/* ============ FOOTER BLOCK TICKER ============ */
+let block=19284551;
+document.getElementById("footBlock").textContent = "TESTNET BLOCK #"+block.toLocaleString();
+setInterval(()=>{block++;document.getElementById("footBlock").textContent="TESTNET BLOCK #"+block.toLocaleString();},4000);
+
+/* ============ INIT ============ */
+renderNav();
+renderWalletBtn();
+renderSwap();
+initSwapsFeed();
+</script>
+</body>
+</html>
